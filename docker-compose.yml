@@ -1,0 +1,27 @@
+# Локальный запуск приложения в Docker. Бэкенд по умолчанию — host.docker.internal:4000.
+# Переменные можно переопределить в shell или через .env для docker compose.
+# См. README.md → Docker.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://host.docker.internal:4000}
+    ports:
+      - "3000:3000"
+    environment:
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-docker-dev-secret-change-me-32chars-min}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://host.docker.internal:4000}
+
+  # Optional reverse proxy (uncomment and configure as needed):
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     - app
