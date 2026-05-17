@@ -55,7 +55,11 @@ func Logging(logger *slog.Logger) func(http.Handler) http.Handler {
 			if requestID := observability.RequestIDFromContext(r.Context()); requestID != "" {
 				attrs = append(attrs, slog.String("request_id", requestID))
 			}
-			if traceID := observability.TraceIDFromContext(r.Context()); traceID != "" {
+			traceID := observability.TraceIDFromOTel(r.Context())
+			if traceID == "" {
+				traceID = observability.TraceIDFromContext(r.Context())
+			}
+			if traceID != "" {
 				attrs = append(attrs, slog.String("trace_id", traceID))
 			}
 

@@ -69,10 +69,10 @@ type SpecificationFilter struct {
 }
 
 type LoginResult struct {
-	AccessToken  string
-	RefreshToken string
-	ExpiresIn    int64
-	User         UserPublic
+	AccessToken  string     `json:"accessToken"`
+	RefreshToken string     `json:"refreshToken"`
+	ExpiresIn    int64      `json:"expiresIn"`
+	User         UserPublic `json:"user"`
 }
 
 type UserPublic struct {
@@ -82,7 +82,7 @@ type UserPublic struct {
 }
 
 type TokenPair struct {
-	AccessToken  string
-	RefreshToken string
-	ExpiresIn    int64
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+	ExpiresIn    int64  `json:"expiresIn"`
 }

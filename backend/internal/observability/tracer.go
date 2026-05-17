@@ -74,15 +74,3 @@ func (t *Tracer) Start(ctx context.Context, name string, attrs ...slog.Attr) (co
 
 	return ctx, span
 }
-
-// InitOpenTelemetry is a placeholder for future OTLP exporter setup.
-func InitOpenTelemetry(ctx context.Context, serviceName string, enabled bool) (func(context.Context) error, error) {
-	if !enabled {
-		return func(context.Context) error { return nil }, nil
-	}
-
-	// Future: otel.SetTracerProvider(...), otel.SetTextMapPropagator(...)
-	_ = ctx
-	_ = serviceName
-	return func(context.Context) error { return nil }, nil
-}

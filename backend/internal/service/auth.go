@@ -30,11 +30,6 @@ func NewAuthService(users repository.UserRepository, cfg config.Config) *AuthSer
 	}
 }
 
-type loginRequest struct {
-	Email    string
-	Password string
-}
-
 func (s *AuthService) Login(ctx context.Context, email, password string) (domain.LoginResult, error) {
 	user, err := s.users.GetByEmail(ctx, email)
 	if err != nil {
@@ -131,11 +126,8 @@ func (s *AuthService) signToken(userID, tokenType string, ttl time.Duration) (st
 
 func (s *AuthService) parseToken(tokenString, expectedType string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
-		if token.Method != jwt.SigningMethodHS256 {
-			return nil, fmt.Errorf("unexpected signing method")
-		}
 		return s.jwtSecret, nil
-	})
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 	if err != nil || !token.Valid {
 		return nil, apperror.Unauthorized("invalid token")
 	}

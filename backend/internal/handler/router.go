@@ -8,6 +8,7 @@ import (
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 
+	"sdd-navigator/backend/internal/metrics"
 	"sdd-navigator/backend/internal/middleware"
 	"sdd-navigator/backend/internal/observability"
 	"sdd-navigator/backend/internal/service"
@@ -23,7 +24,12 @@ type Dependencies struct {
 	Reports         *service.ReportsService
 	Tracer          *observability.Tracer
 	Logger          *slog.Logger
+	Metrics         *metrics.Registry
 	AllowedOrigins  []string
+	OTelEnabled     bool
+	OTelServiceName string
+	RateLimitRPS    float64
+	RateLimitBurst  int
 	RequestLogger   func(http.Handler) http.Handler
 }
 
@@ -33,6 +39,10 @@ func NewRouter(deps Dependencies) http.Handler {
 	r.Use(chimiddleware.RealIP)
 	r.Use(chimiddleware.NoCache)
 	r.Use(middleware.RequestID)
+	r.Use(middleware.OpenTelemetry(deps.OTelEnabled, deps.OTelServiceName))
+	if deps.Metrics != nil {
+		r.Use(middleware.Metrics(deps.Metrics))
+	}
 	r.Use(middleware.Tracing(deps.Tracer))
 	if deps.RequestLogger != nil {
 		r.Use(deps.RequestLogger)
@@ -48,11 +58,15 @@ func NewRouter(deps Dependencies) http.Handler {
 	reports := NewReportsHandler(deps.Reports)
 
 	r.Get("/health", health.Health)
+	if deps.Metrics != nil {
+		r.Handle("/metrics", deps.Metrics.Handler())
+	}
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),
 	))
 
 	r.Route("/auth", func(authRouter chi.Router) {
+		authRouter.Use(middleware.RateLimit(deps.RateLimitRPS, deps.RateLimitBurst))
 		authRouter.Post("/login", auth.Login)
 		authRouter.Post("/refresh", auth.Refresh)
 	})

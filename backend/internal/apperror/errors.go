@@ -46,6 +46,10 @@ func NotFound(message string) *AppError {
 	return New(http.StatusNotFound, "not_found", message, nil)
 }
 
+func TooManyRequests(message string) *AppError {
+	return New(http.StatusTooManyRequests, "rate_limited", message, nil)
+}
+
 func Internal(err error) *AppError {
 	return New(http.StatusInternalServerError, "internal_error", "internal server error", err)
 }

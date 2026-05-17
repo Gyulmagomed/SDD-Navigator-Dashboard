@@ -25,7 +25,7 @@ func withUserID(ctx context.Context, userID string) context.Context {
 }
 
 // JWTAuth validates Bearer access tokens for protected routes.
-func JWTAuth(authService *service.AuthService) func(http.Handler) http.Handler {
+func JWTAuth(validator service.TokenValidator) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			header := r.Header.Get("Authorization")
@@ -40,7 +40,7 @@ func JWTAuth(authService *service.AuthService) func(http.Handler) http.Handler {
 				return
 			}
 
-			userID, err := authService.ValidateAccessToken(r.Context(), parts[1])
+			userID, err := validator.ValidateAccessToken(r.Context(), parts[1])
 			if err != nil {
 				httputil.WriteError(w, apperror.From(err))
 				return

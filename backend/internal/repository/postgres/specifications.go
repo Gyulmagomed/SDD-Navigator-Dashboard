@@ -22,6 +22,10 @@ func NewSpecificationRepository(db *DB) *SpecificationRepository {
 }
 
 func (r *SpecificationRepository) List(ctx context.Context, filter domain.SpecificationFilter) ([]domain.Specification, int, error) {
+	start := now()
+	ctx, cancel := r.db.withTimeout(ctx)
+	defer cancel()
+
 	where := make([]string, 0, 6)
 	args := make([]any, 0, 8)
 	argPos := 1
@@ -61,17 +65,7 @@ func (r *SpecificationRepository) List(ctx context.Context, filter domain.Specif
 		return nil, 0, fmt.Errorf("count specifications: %w", err)
 	}
 
-	sortBy := "last_updated"
-	switch filter.SortBy {
-	case "name", "coveragePercent", "lastUpdated", "status", "owner":
-		if filter.SortBy == "coveragePercent" {
-			sortBy = "coverage_percent"
-		} else if filter.SortBy == "lastUpdated" {
-			sortBy = "last_updated"
-		} else {
-			sortBy = filter.SortBy
-		}
-	}
+	sortBy := resolveSpecSortColumn(filter.SortBy)
 
 	sortOrder := "DESC"
 	if strings.EqualFold(filter.SortOrder, "asc") {
@@ -108,10 +102,15 @@ func (r *SpecificationRepository) List(ctx context.Context, filter domain.Specif
 		return nil, 0, fmt.Errorf("iterate specifications: %w", err)
 	}
 
+	r.db.observe("specifications.list", start)
 	return specs, total, nil
 }
 
 func (r *SpecificationRepository) GetByID(ctx context.Context, id string) (domain.Specification, error) {
+	start := now()
+	ctx, cancel := r.db.withTimeout(ctx)
+	defer cancel()
+
 	const query = `
 		SELECT id, name, version, status, total_items, covered_items, coverage_percent, last_updated, owner
 		FROM specifications
@@ -127,6 +126,7 @@ func (r *SpecificationRepository) GetByID(ctx context.Context, id string) (domai
 		return domain.Specification{}, fmt.Errorf("get specification: %w", err)
 	}
 
+	r.db.observe("specifications.get_by_id", start)
 	return spec, nil
 }
 
