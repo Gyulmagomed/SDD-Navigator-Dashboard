@@ -1,0 +1,608 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "REST API for the SDD Navigator dashboard.",
+        "title": "SDD Navigator API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:4000",
+    "basePath": "/",
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "Credentials",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.loginRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sdd-navigator_backend_internal_domain.LoginResult"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh access token",
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.refreshRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sdd-navigator_backend_internal_domain.TokenPair"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/coverage/{specId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "coverage"
+                ],
+                "summary": "Coverage metrics by specification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Specification ID",
+                        "name": "specId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.apiResponse-array_sdd-navigator_backend_internal_domain_CoverageMetric"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dashboard/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dashboard"
+                ],
+                "summary": "Dashboard statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.apiResponse-sdd-navigator_backend_internal_domain_DashboardStats"
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Health check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/export/{specId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Export specification report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Specification ID",
+                        "name": "specId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "pdf",
+                            "csv",
+                            "json"
+                        ],
+                        "type": "string",
+                        "description": "Export format",
+                        "name": "format",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/specifications": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "specifications"
+                ],
+                "summary": "List specifications",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Status filter",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Owner filter",
+                        "name": "owner",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search by name or id",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.apiResponse-array_internal_handler_specificationDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/specifications/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "specifications"
+                ],
+                "summary": "Get specification by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Specification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.apiResponse-internal_handler_specificationDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "internal_handler.apiErrorPayload": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.apiResponse-array_internal_handler_specificationDTO": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_handler.specificationDTO"
+                    }
+                },
+                "error": {
+                    "$ref": "#/definitions/internal_handler.apiErrorPayload"
+                },
+                "meta": {
+                    "$ref": "#/definitions/sdd-navigator_backend_internal_domain.PaginationMeta"
+                }
+            }
+        },
+        "internal_handler.apiResponse-array_sdd-navigator_backend_internal_domain_CoverageMetric": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sdd-navigator_backend_internal_domain.CoverageMetric"
+                    }
+                },
+                "error": {
+                    "$ref": "#/definitions/internal_handler.apiErrorPayload"
+                },
+                "meta": {
+                    "$ref": "#/definitions/sdd-navigator_backend_internal_domain.PaginationMeta"
+                }
+            }
+        },
+        "internal_handler.apiResponse-internal_handler_specificationDTO": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_handler.specificationDTO"
+                },
+                "error": {
+                    "$ref": "#/definitions/internal_handler.apiErrorPayload"
+                },
+                "meta": {
+                    "$ref": "#/definitions/sdd-navigator_backend_internal_domain.PaginationMeta"
+                }
+            }
+        },
+        "internal_handler.apiResponse-sdd-navigator_backend_internal_domain_DashboardStats": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/sdd-navigator_backend_internal_domain.DashboardStats"
+                },
+                "error": {
+                    "$ref": "#/definitions/internal_handler.apiErrorPayload"
+                },
+                "meta": {
+                    "$ref": "#/definitions/sdd-navigator_backend_internal_domain.PaginationMeta"
+                }
+            }
+        },
+        "internal_handler.errorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.loginRequestBody": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.refreshRequestBody": {
+            "type": "object",
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.specificationDTO": {
+            "type": "object",
+            "properties": {
+                "coveragePercent": {
+                    "type": "number"
+                },
+                "coveredItems": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastUpdated": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "totalItems": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "sdd-navigator_backend_internal_domain.CoverageItem": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "linkedComponents": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "sdd-navigator_backend_internal_domain.CoverageMetric": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sdd-navigator_backend_internal_domain.CoverageItem"
+                    }
+                },
+                "percent": {
+                    "type": "number"
+                },
+                "section": {
+                    "type": "string"
+                },
+                "specID": {
+                    "type": "string"
+                }
+            }
+        },
+        "sdd-navigator_backend_internal_domain.DashboardStats": {
+            "type": "object",
+            "properties": {
+                "avgCoverage": {
+                    "type": "number"
+                },
+                "criticalGaps": {
+                    "type": "integer"
+                },
+                "fullyCoveredSpecs": {
+                    "type": "integer"
+                },
+                "totalSpecs": {
+                    "type": "integer"
+                },
+                "totalSpecsDeltaLastWeek": {
+                    "type": "integer"
+                },
+                "trend": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sdd-navigator_backend_internal_domain.TrendPoint"
+                    }
+                }
+            }
+        },
+        "sdd-navigator_backend_internal_domain.LoginResult": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "expiresIn": {
+                    "type": "integer"
+                },
+                "refreshToken": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/sdd-navigator_backend_internal_domain.UserPublic"
+                }
+            }
+        },
+        "sdd-navigator_backend_internal_domain.PaginationMeta": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "sdd-navigator_backend_internal_domain.TokenPair": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "expiresIn": {
+                    "type": "integer"
+                },
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "sdd-navigator_backend_internal_domain.TrendPoint": {
+            "type": "object",
+            "properties": {
+                "coverage": {
+                    "type": "number"
+                },
+                "date": {
+                    "type": "string"
+                }
+            }
+        },
+        "sdd-navigator_backend_internal_domain.UserPublic": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

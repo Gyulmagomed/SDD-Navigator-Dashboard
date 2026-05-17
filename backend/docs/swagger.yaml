@@ -1,0 +1,388 @@
+basePath: /
+definitions:
+  internal_handler.apiErrorPayload:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  internal_handler.apiResponse-array_internal_handler_specificationDTO:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_handler.specificationDTO'
+        type: array
+      error:
+        $ref: '#/definitions/internal_handler.apiErrorPayload'
+      meta:
+        $ref: '#/definitions/sdd-navigator_backend_internal_domain.PaginationMeta'
+    type: object
+  internal_handler.apiResponse-array_sdd-navigator_backend_internal_domain_CoverageMetric:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/sdd-navigator_backend_internal_domain.CoverageMetric'
+        type: array
+      error:
+        $ref: '#/definitions/internal_handler.apiErrorPayload'
+      meta:
+        $ref: '#/definitions/sdd-navigator_backend_internal_domain.PaginationMeta'
+    type: object
+  internal_handler.apiResponse-internal_handler_specificationDTO:
+    properties:
+      data:
+        $ref: '#/definitions/internal_handler.specificationDTO'
+      error:
+        $ref: '#/definitions/internal_handler.apiErrorPayload'
+      meta:
+        $ref: '#/definitions/sdd-navigator_backend_internal_domain.PaginationMeta'
+    type: object
+  internal_handler.apiResponse-sdd-navigator_backend_internal_domain_DashboardStats:
+    properties:
+      data:
+        $ref: '#/definitions/sdd-navigator_backend_internal_domain.DashboardStats'
+      error:
+        $ref: '#/definitions/internal_handler.apiErrorPayload'
+      meta:
+        $ref: '#/definitions/sdd-navigator_backend_internal_domain.PaginationMeta'
+    type: object
+  internal_handler.errorResponse:
+    properties:
+      code:
+        type: string
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  internal_handler.loginRequestBody:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  internal_handler.refreshRequestBody:
+    properties:
+      refreshToken:
+        type: string
+    type: object
+  internal_handler.specificationDTO:
+    properties:
+      coveragePercent:
+        type: number
+      coveredItems:
+        type: integer
+      id:
+        type: string
+      lastUpdated:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      status:
+        type: string
+      totalItems:
+        type: integer
+      version:
+        type: string
+    type: object
+  sdd-navigator_backend_internal_domain.CoverageItem:
+    properties:
+      id:
+        type: string
+      linkedComponents:
+        items:
+          type: string
+        type: array
+      status:
+        type: string
+      title:
+        type: string
+    type: object
+  sdd-navigator_backend_internal_domain.CoverageMetric:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/sdd-navigator_backend_internal_domain.CoverageItem'
+        type: array
+      percent:
+        type: number
+      section:
+        type: string
+      specID:
+        type: string
+    type: object
+  sdd-navigator_backend_internal_domain.DashboardStats:
+    properties:
+      avgCoverage:
+        type: number
+      criticalGaps:
+        type: integer
+      fullyCoveredSpecs:
+        type: integer
+      totalSpecs:
+        type: integer
+      totalSpecsDeltaLastWeek:
+        type: integer
+      trend:
+        items:
+          $ref: '#/definitions/sdd-navigator_backend_internal_domain.TrendPoint'
+        type: array
+    type: object
+  sdd-navigator_backend_internal_domain.LoginResult:
+    properties:
+      accessToken:
+        type: string
+      expiresIn:
+        type: integer
+      refreshToken:
+        type: string
+      user:
+        $ref: '#/definitions/sdd-navigator_backend_internal_domain.UserPublic'
+    type: object
+  sdd-navigator_backend_internal_domain.PaginationMeta:
+    properties:
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  sdd-navigator_backend_internal_domain.TokenPair:
+    properties:
+      accessToken:
+        type: string
+      expiresIn:
+        type: integer
+      refreshToken:
+        type: string
+    type: object
+  sdd-navigator_backend_internal_domain.TrendPoint:
+    properties:
+      coverage:
+        type: number
+      date:
+        type: string
+    type: object
+  sdd-navigator_backend_internal_domain.UserPublic:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+host: localhost:4000
+info:
+  contact: {}
+  description: REST API for the SDD Navigator dashboard.
+  title: SDD Navigator API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler.loginRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdd-navigator_backend_internal_domain.LoginResult'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handler.errorResponse'
+      summary: Login
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Refresh token
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler.refreshRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdd-navigator_backend_internal_domain.TokenPair'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handler.errorResponse'
+      summary: Refresh access token
+      tags:
+      - auth
+  /coverage/{specId}:
+    get:
+      parameters:
+      - description: Specification ID
+        in: path
+        name: specId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handler.apiResponse-array_sdd-navigator_backend_internal_domain_CoverageMetric'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Coverage metrics by specification
+      tags:
+      - coverage
+  /dashboard/stats:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handler.apiResponse-sdd-navigator_backend_internal_domain_DashboardStats'
+      security:
+      - BearerAuth: []
+      summary: Dashboard statistics
+      tags:
+      - dashboard
+  /health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - system
+  /reports/export/{specId}:
+    get:
+      parameters:
+      - description: Specification ID
+        in: path
+        name: specId
+        required: true
+        type: string
+      - description: Export format
+        enum:
+        - pdf
+        - csv
+        - json
+        in: query
+        name: format
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Export specification report
+      tags:
+      - reports
+  /specifications:
+    get:
+      parameters:
+      - description: Status filter
+        in: query
+        name: status
+        type: string
+      - description: Owner filter
+        in: query
+        name: owner
+        type: string
+      - description: Search by name or id
+        in: query
+        name: search
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handler.apiResponse-array_internal_handler_specificationDTO'
+      security:
+      - BearerAuth: []
+      summary: List specifications
+      tags:
+      - specifications
+  /specifications/{id}:
+    get:
+      parameters:
+      - description: Specification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handler.apiResponse-internal_handler_specificationDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get specification by id
+      tags:
+      - specifications
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
